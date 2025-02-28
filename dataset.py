@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
+import torch
 from torch.utils.data import Dataset
 from sklearn.preprocessing import MultiLabelBinarizer
 
@@ -13,12 +14,12 @@ def contrast_enhance(image):
     merge_img = cv2.addWeighted(image, 4, blur_img, -4, 128)
     return merge_img
 
-class FundusOCTDataset(Dataset):
-    def __init__(self, df, fundus_image_dir, oct_image_dir, mlb=None, fundus_transform=None, oct_transform=None):
+class CFPOCTDataset(Dataset):
+    def __init__(self, df, cfp_image_dir, oct_image_dir, mlb=None, cfp_transform=None, oct_transform=None):
         self.df = df
-        self.fundus_image_dir = fundus_image_dir
+        self.cfp_image_dir = cfp_image_dir
         self.oct_image_dir = oct_image_dir
-        self.fundus_transform = fundus_transform
+        self.cfp_transform = cfp_transform
         self.oct_transform = oct_transform
         self.mlb = mlb if mlb is not None else MultiLabelBinarizer()
         if not mlb:
@@ -30,15 +31,15 @@ class FundusOCTDataset(Dataset):
         return len(self.df)
     
     def __getitem__(self, idx):
-        # ----- Fundus Image ----- #
-        fundus_img_name = self.df.iloc[idx, 2]
-        fundus_image_path = os.path.join(self.fundus_image_dir, fundus_img_name[:2], fundus_img_name)
-        fundus_image = Image.open(fundus_image_path)
-        fundus_image = np.array(fundus_image)
-        fundus_image = contrast_enhance(fundus_image)
-        fundus_image = cv2.cvtColor(fundus_image, cv2.COLOR_BGR2RGB)
-        if self.fundus_transform:
-            fundus_image = self.fundus_transform(fundus_image)
+        # ----- CFP Image ----- #
+        cfp_img_name = self.df.iloc[idx, 2]
+        cfp_image_path = os.path.join(self.cfp_image_dir, cfp_img_name[:2], cfp_img_name)
+        cfp_image = Image.open(cfp_image_path)
+        cfp_image = np.array(cfp_image)
+        cfp_image = contrast_enhance(cfp_image)
+        cfp_image = cv2.cvtColor(cfp_image, cv2.COLOR_BGR2RGB)
+        if self.cfp_transform:
+            cfp_image = self.cfp_transform(cfp_image)
         
         # ----- OCT Image ----- #
         zip_name = self.df.iloc[idx, 3]
@@ -54,14 +55,14 @@ class FundusOCTDataset(Dataset):
             if self.oct_transform:
                 image = self.oct_transform(image)
             oct_3d.append(image)
-        import torch
-        oct_3d = torch.stack(oct_3d, dim=0)  # (64, 1, 224, 224)
-        oct_3d = oct_3d.permute(1, 0, 2, 3).contiguous()  # (1, 64, 224, 224)
+        
+        oct_3d = torch.stack(oct_3d, dim=0)  
+        oct_3d = oct_3d.permute(1, 0, 2, 3).contiguous() 
         
         label = torch.tensor(self.label[idx], dtype=torch.float32)
         
         sample = {
-            'fundus': fundus_image,
+            'cfp': cfp_image,
             'oct': oct_3d,
             'label': label
         }
