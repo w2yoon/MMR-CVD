@@ -4,9 +4,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import timm
 
-class FundusFeatureExtractor(nn.Module):
+class CFPFeatureExtractor(nn.Module):
     def __init__(self, fine_tune=True):
-        super(FundusFeatureExtractor, self).__init__()
+        super(CFPFeatureExtractor, self).__init__()
         self.convnext = timm.create_model('convnext_base.fb_in22k_ft_in1k_384', pretrained=True)
         self.convnext.head.fc = nn.Identity()
         self.fc = nn.Linear(self.convnext.num_features, 256)
@@ -98,12 +98,12 @@ class OCTFeatureExtractor_DilatedAttention(nn.Module):
         return feature
 
 class CrossAttentionFusion(nn.Module):
-    def __init__(self, fundus_dim, oct_dim, fusion_dim, num_heads=4):
+    def __init__(self, cfp_dim, oct_dim, fusion_dim, num_heads=4):
         super(CrossAttentionFusion, self).__init__()
-        self.project_fundus = nn.Linear(fundus_dim, fusion_dim)
+        self.project_cfp = nn.Linear(cfp_dim, fusion_dim)
         self.project_oct    = nn.Linear(oct_dim, fusion_dim)
         
-        self.cross_attn_fundus = nn.MultiheadAttention(embed_dim=fusion_dim, num_heads=num_heads, batch_first=True)
+        self.cross_attn_cfp = nn.MultiheadAttention(embed_dim=fusion_dim, num_heads=num_heads, batch_first=True)
         self.cross_attn_oct    = nn.MultiheadAttention(embed_dim=fusion_dim, num_heads=num_heads, batch_first=True)
         
         self.fusion_mlp = nn.Sequential(
@@ -112,28 +112,28 @@ class CrossAttentionFusion(nn.Module):
             nn.Linear(fusion_dim, fusion_dim)
         )
     
-    def forward(self, fundus_feat, oct_feat):
-        fundus_token = self.project_fundus(fundus_feat).unsqueeze(1)
+    def forward(self, cfp_feat, oct_feat):
+        cfp_token = self.project_cfp(cfp_feat).unsqueeze(1)
         oct_token    = self.project_oct(oct_feat).unsqueeze(1)
         
-        attn_out_fundus, _ = self.cross_attn_fundus(query=fundus_token, key=oct_token, value=oct_token)
-        attn_out_oct, _ = self.cross_attn_oct(query=oct_token, key=fundus_token, value=fundus_token)
+        attn_out_cfp, _ = self.cross_attn_cfp(query=cfp_token, key=oct_token, value=oct_token)
+        attn_out_oct, _ = self.cross_attn_oct(query=oct_token, key=cfp_token, value=cfp_token)
         
-        fused = torch.cat([attn_out_fundus.squeeze(1), attn_out_oct.squeeze(1)], dim=-1)
+        fused = torch.cat([attn_out_cfp.squeeze(1), attn_out_oct.squeeze(1)], dim=-1)
         fused = self.fusion_mlp(fused)
         return fused
 
-class FundusOCTFusionNet(nn.Module):
+class CFPOCTFusionNet(nn.Module):
     def __init__(self, num_classes=5, fusion_dim=512):
-        super(FundusOCTFusionNet, self).__init__()
-        self.fundus_backbone = FundusFeatureExtractor(fine_tune=True)
-        self.fundus_feat_dim = 256
+        super(CFPOCTFusionNet, self).__init__()
+        self.cfp_backbone = CFPFeatureExtractor(fine_tune=True)
+        self.cfp_feat_dim = 256
         
         self.oct_backbone = OCTFeatureExtractor_DilatedAttention(in_channels=1, feature_dim=256)
         self.oct_feat_dim = 256
         
         self.fusion = CrossAttentionFusion(
-            fundus_dim=self.fundus_feat_dim,
+            cfp_dim=self.cfp_feat_dim,
             oct_dim=self.oct_feat_dim,
             fusion_dim=fusion_dim,
             num_heads=4
@@ -149,9 +149,9 @@ class FundusOCTFusionNet(nn.Module):
             nn.Linear(128, num_classes)
         )
     
-    def forward(self, fundus, oct_volume):
-        fundus_feat = self.fundus_backbone(fundus)
+    def forward(self, cfp, oct_volume):
+        cfp_feat = self.cfp_backbone(cfp)
         oct_feat    = self.oct_backbone(oct_volume)
-        fused_feat  = self.fusion(fundus_feat, oct_feat)
+        fused_feat  = self.fusion(cfp_feat, oct_feat)
         output = self.classifier(fused_feat)
         return output
