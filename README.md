@@ -37,10 +37,14 @@ This command will:
 * Train the multi-modal fusion network using the specified hyperparameters.
 * Save the trained model to the designated checkpoint file.
 
-### Training
+### Evaluation
+
+#### Test Dataset Preparation
+For testing, please download the test image dataset from here. Once downloaded, make sure that the **cfp** and **oct** folders are placed inside the **/data/test_retinal_img** directory.
+
 To evaluate the model, run:
 ```bash
-python test.py --csv_path /path/to/labels.csv --fundus_dir /path/to/fundus --oct_dir /path/to/oct --model_path model_checkpoint.pth --batch_size 16 --num_workers 8
+python test.py --csv_path /path/to/labels.csv --cfp_dir /path/to/cfp --oct_dir /path/to/oct --model_path model_checkpoint.pth --batch_size 16 --num_workers 8
 ```
 
 * The evaluation script computes performance metrics including accuracy and F1-score for each disease class.
