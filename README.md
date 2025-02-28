@@ -1,4 +1,4 @@
-# Multi-Modal Retinal Imaging for CVD Prediction
+# Multimodal Retinal Imaging for CVD Prediction
 
 ## Project Overview
 Cardiovascular diseases (CVDs) are one of the leading global health challenges, and early, accurate risk assessment is critical for effective intervention. Retinal imaging has emerged as a promising non-invasive method for assessing systemic vascular health, as retinal features are strongly linked to CVD risk. However, traditional approaches relying solely on Color Fundus Photography (CFP) provide only 2D views and may overlook subtle microvascular abnormalities. In contrast, Optical Coherence Tomography (OCT) offers high-resolution, 3D structural information but remains underutilized. To address these gaps, our project introduces a novel multi-modal framework that integrates both CFP and OCT images. The model employs a Bidirectional Cross-Attention mechanism to fuse complementary features from both modalities, uses fine-tuning for vascular feature extraction from CFP, and leverages a 3D CNN module to capture depth-related structural details. Additionally, our multi-label classification approach allows for the simultaneous prediction of multiple cardiovascular conditions, delivering a more comprehensive and clinically relevant risk assessment. Experimental results indicate that our approach outperforms existing methods in terms of accuracy and F1-score.
@@ -8,6 +8,8 @@ Cardiovascular diseases (CVDs) are one of the leading global health challenges, 
 ├── data
 │   ├── test.csv
 │   └── test_retinal_img
+│       ├── cfp
+│       └── oct
 └── code
     ├── dataset.py
     ├── utils.py
@@ -25,7 +27,7 @@ The project is designed to be user-friendly, allowing you to train and evaluate 
 ### Training
 To train the model, run the following command:
 ```bash
-python train.py --csv_path /path/to/labels.csv --fundus_dir /path/to/fundus --oct_dir /path/to/oct --epochs 50 --batch_size 16 --num_workers 8 --save_path model_checkpoint.pth
+python train.py --csv_path /path/to/train.csv --cfp_dir /path/to/cfp --oct_dir /path/to/oct --epochs 150 --batch_size 16 --num_workers 8 --save_path model_checkpoint.pth
 ```
 
 This command will:
@@ -41,6 +43,6 @@ To evaluate the model, run:
 python test.py --csv_path /path/to/labels.csv --fundus_dir /path/to/fundus --oct_dir /path/to/oct --model_path model_checkpoint.pth --batch_size 16 --num_workers 8
 ```
 
-* The evaluation script computes performance metrics including accuracy, F1-score, and AUC for each disease class.
+* The evaluation script computes performance metrics including accuracy and F1-score for each disease class.
 
 
