@@ -24,6 +24,10 @@ You can download pretrained weights here.
 ## Training and Evaluation
 The project is designed to be user-friendly, allowing you to train and evaluate the model directly via command-line arguments.
 
+
+> 💡 This model was trained and tested using data from the UK Biobank (UKBB). In accordance with UK Biobank's strict data access and sharing policies, the data used for this project cannot be shared or made publicly available. We have contacted the UK Biobank Access Team to request permission to share a subset of the test dataset, and we are awaiting their response. For more information on UK Biobank's data access policies, please refer to the official UK Biobank website: https://www.ukbiobank.ac.uk/.
+
+
 ### Training
 To train the model, run the following command:
 ```bash
@@ -32,15 +36,17 @@ python train.py --csv_path /path/to/train.csv --cfp_dir /path/to/cfp --oct_dir /
 
 This command will:
 
-* Load the dataset based on the provided CSV file and image directories.
-* Apply appropriate image transformations for CFP and OCT images.
+~~Load the dataset based on the provided CSV file and image directories.~~
+
+~~Apply appropriate image transformations for CFP and OCT images.~~
 * Train the multi-modal fusion network using the specified hyperparameters.
 * Save the trained model to the designated checkpoint file.
 
 ### Evaluation
 
-#### Test Dataset Preparation
-For testing, please download the test image dataset from here. Once downloaded, make sure that the **cfp** and **oct** folders are placed inside the **/data/test_retinal_img** directory.
+#### ~~Test Dataset Preparation~~
+
+~~For testing, please download the test image dataset from here. Once downloaded, make sure that the **cfp** and **oct** folders are placed inside the **/data/test_retinal_img** directory.~~
 
 To evaluate the model, run:
 ```bash
