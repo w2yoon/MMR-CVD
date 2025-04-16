@@ -19,7 +19,7 @@ Cardiovascular diseases (CVDs) are one of the leading global health challenges, 
 ```
 
 ## Pretrained Weights
-You can download pretrained weights here.
+You can download pretrained weights [here](https://drive.google.com/file/d/1iP6jX_bFMOmZKpP6gjF92fpA6ZCjl1rr/view?usp=sharing).
 
 ## Training and Evaluation
 The project is designed to be user-friendly, allowing you to train and evaluate the model directly via command-line arguments.
@@ -46,7 +46,9 @@ This command will:
 
 #### ~~Test Dataset Preparation~~
 
-~~For testing, please download the test image dataset from here. Once downloaded, make sure that the **cfp** and **oct** folders are placed inside the **/data/test_retinal_img** directory.~~
+~~For testing, please download the test image dataset from here.~~
+
+~~Once downloaded, make sure that the **cfp** and **oct** folders are placed inside the **/data/test_retinal_img** directory.~~
 
 To evaluate the model, run:
 ```bash
